@@ -43,9 +43,17 @@ http.put(`${url}:id`, (req, res) => {
     }
 
 })
-// http.delete(`${url}`, (req, res) => {
-    
-// })
+http.delete(`${url}:id`, (req, res) => {
+    const genre= genres.find(e => e.id === parseInt(req.params.id))
+    if (genre == null) {
+        res.status(404).send('This item is not found')
+    } else {
+        const index = genres.indexOf(genre)
+        genres.splice(index,1)
+        res.send(genres)
+    }
+
+})
 
 const port = process.env.PORT || 5080;
 http.listen(port, () => console.log("listening on port "+port+"..."))
