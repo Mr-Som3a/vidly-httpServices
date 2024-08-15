@@ -29,9 +29,20 @@ http.post(`${url}`, (req, res) => {
     res.status(400).send(error.details[0].message)
 
 })
-// http.put(`${url}`, (req, res) => {
-    
-// })
+http.put(`${url}:id`, (req, res) => {
+    const genre = genres.find(e => e.id === parseInt(req.params.id))
+    if (genre == null) {
+        res.status(404).send('This item is not found')
+    } else {
+        genre.name = req.body.name
+        const { error } = validation({ id: req.params.id, name: genre.name })
+        if (!error) {
+            return res.send(genre)
+        }
+        res.status(400).send(error.details[0].message)
+    }
+
+})
 // http.delete(`${url}`, (req, res) => {
     
 // })
