@@ -1,30 +1,35 @@
 const express = require('express')
 const validation = require('./validation')
-
+const mongoose = require('mongoose')
 const http = express()
 
 http.use(express.json())
 
 const url = '/api/genres/'
 
-const genres = [
-    {id:1,name:'Action'},
-    {id:2,name:'Comedy'},
-    {id:3,name:'Romantic'},
-]
+mongoose.connect('mongodb://localhost/gneres')
+    .then(() => console.log('connecting to DB...'))
+    .catch((err) => console.log('not connecting...', err))
 
-http.get(`${url}`, (req, res) => {
+const genreSchema = new mongoose.Schema({
+    name:String
+})
+const genreDB = new mongoose.model('Genre', genreSchema)
+
+
+
+http.get(`${url}`,async (req, res) => {
+    const genres = await genreDB.find()
     res.send(genres)
 })
-http.post(`${url}`, (req, res) => {
-    const genre = {
-        id: req.body.id,
-        name: req.body.name
-    }
-    const { error } = validation(genre)
+http.post(`${url}`, async (req, res) => {
+    const { error } = validation(req.body)
     if (!error) {
-        genres.push(genre)
-        return res.send(genres)
+        let genre = new genreDB({
+            name: req.body.name
+        })
+        const result = await genre.save()
+        return res.send(result)
     }
     res.status(400).send(error.details[0].message)
 
