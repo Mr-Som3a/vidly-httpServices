@@ -9,7 +9,7 @@ const url = '/api/genres/'
 
 mongoose.connect('mongodb://localhost/gneres')
     .then(() => console.log('connecting to DB...'))
-    .catch((err) => console.log('not connecting...', err))
+    .catch((err) => console.log('not connecting DB...', err))
 
 const genreSchema = new mongoose.Schema({
     name:String
@@ -34,33 +34,29 @@ http.post(`${url}`, async (req, res) => {
     res.status(400).send(error.details[0].message)
 
 })
-http.put(`${url}:id`, (req, res) => {
-    const genre = genres.find(e => e.id === parseInt(req.params.id))
-    if (genre == null) {
-        res.status(404).send('This item is not found')
-    } else {
-        genre.name = req.body.name
-        const { error } = validation({ id: req.params.id, name: genre.name })
-        if (!error) {
-            return res.send(genre)
+http.put(`${url}:id`, async (req, res) => {
+    const { error } = validation({ name: req.body.name })
+    
+    if (!error) {
+        const genre =await genreDB.findByIdAndUpdate(req.params.id, { name: req.body.name }, { new: true })
+        if (genre == null) {
+            res.status(404).send('This item is not found')
         }
-        res.status(400).send(error.details[0].message)
+        return res.send(genre)
     }
+    res.status(400).send(error.details[0].message)
 
 })
-http.delete(`${url}:id`, (req, res) => {
-    const genre= genres.find(e => e.id === parseInt(req.params.id))
+
+http.delete(`${url}:id`, async (req, res) => {
+    
+    const genre= await genreDB.findByIdAndDelete(req.params.id, { name: req.body.name }, { new: true })
     if (genre == null) {
         res.status(404).send('This item is not found')
-    } else {
-        const index = genres.indexOf(genre)
-        genres.splice(index,1)
-        res.send(genres)
-    }
+    } 
+    res.send(await genreDB.find())
 
 })
 
 const port = process.env.PORT || 5080;
 http.listen(port, () => console.log("listening on port "+port+"..."))
-
-
