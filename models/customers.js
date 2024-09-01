@@ -1,40 +1,38 @@
 const Joi = require('joi')
 const mongoose = require('mongoose')
 
-
-const Customer = new mongoose.model('Customer', new mongoose.Schema({
+const customerSchema = new mongoose.Schema({
     name:{
         type:String,
         required: true,
-        minlength:5,
+        minlength:1,
         maxlength:255,
     },
-    email:{
-        type:String,
+    phone:{
+        type:Number,
         required: true,
         minlength:5,
         maxlength:255,
-        unique:true
     },
-    password:{
-        type:String,
-        required: true,
-        minlength:5,
-        maxlength:1024,
-    },
-
-}))
-
-const schema = Joi.object({
-    name:Joi.string().min(3).max(255).required(),
-    email:Joi.string().email().min(3).max(255).required(),
-    password:Joi.string().min(3).max(255).required(),
+    isGold:{
+        type:Boolean,
+        default:false
+    }
 })
 
-function validation(object) {
+const Customer = mongoose.model('Customer', customerSchema)
+
+const schema = Joi.object({
+    name:Joi.string().min(1).max(255).required(),
+    phone:Joi.string().min(5).max(255).required(),
+    isGold:Joi.boolean()
+})
+
+function validateCustomer(object) {
     return schema.validate(object)
 }
 
 
 module.exports.Customer = Customer
-module.exports.validate = validation
+module.exports.validate = validateCustomer
+module.exports.customerSchema = customerSchema

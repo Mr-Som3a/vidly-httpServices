@@ -6,7 +6,7 @@ const router = express()
 
 
 router.get(`/`,async (req, res) => {
-    const customers = await Customer.find()
+    const customers = await Customer.find().sort('name')
     res.send(customers)
 })
 router.post(`/`, async (req, res) => {
@@ -14,20 +14,24 @@ router.post(`/`, async (req, res) => {
     if (!error) {
         let customer = new Customer({
             name: req.body.name,
-            email: req.body.email,
-            password: req.body.password
+            phone: req.body.phone,
+            isGold:req.body.isGold
         })
-        const result = await customer.save()
-        return res.send(result)
+        customer = await customer.save()
+        return res.send(customer)
     }
     res.status(400).send(error.details[0].message)
 
 })
 router.put(`/:id`, async (req, res) => {
-    const { error } = validate({ name: req.body.name })
+    const { error } = validate(req.body)
     
     if (!error) {
-        const customer =await Customer.findByIdAndUpdate(req.params.id, { name: req.body.name }, { new: true })
+        const customer =await Customer.findByIdAndUpdate(req.params.id, { 
+            name: req.body.name,
+            phone: req.body.phone,
+            isGold:req.body.isGold
+        }, { new: true })
         if (customer == null) {
             res.status(404).send('This item is not found')
         }
@@ -39,11 +43,11 @@ router.put(`/:id`, async (req, res) => {
 
 router.delete(`/:id`, async (req, res) => {
     
-    const customer = await Customer.findByIdAndDelete(req.params.id, { name: req.body.name }, { new: true })
+    const customer = await Customer.findByIdAndDelete(req.params.id)
     if (customer == null) {
         res.status(404).send('This item is not found')
     } 
-    res.send(await Customer.find())
+    res.send(await Customer.find().sort('name'))
 
 })
 
